@@ -27,8 +27,8 @@ public:
     }
     void update()
     {
-        x = x + vx * dt;
-        y = y + vy * dt;
+        x += vx * dt;
+        y += y + vy * dt;
     }
 };
 
@@ -71,12 +71,12 @@ float tempvar;
 void calcvelocities(MOVER M[])
 {
     float f;
-    float dx, dy, vx, vy, r;
+    float dx, dy, vx, vy, ax, ay, r;
     float theta;
     for (int i = 0; i < N; i++)
     {
-        vx = 0;
-        vy = 0;
+        ax = 0;
+        ay = 0;
         for (int j = 0; j < N; j++)
         {
             if (i != j)
@@ -84,19 +84,17 @@ void calcvelocities(MOVER M[])
                 dx = M[j].x - M[i].x;
                 dy = M[j].y - M[i].y;
                 r = sqrt(dx * dx + dy * dy);
-                if (r < 70)
-                {
-                    theta = atan2(dy, dx);
-                    f = getforce(r);
 
-                    vx += f * cos(theta) * dt;
-                    vy += f * sin(theta) * dt;
-                }
+                theta = atan2(dy, dx);
+                f = getforce(r);
+
+                ax += f * cos(theta);
+                ay += f * sin(theta);
             }
         }
-        M[i].vx = vx;
-        M[i].vy = vx;
-        // std::cout << " vx " << vx << " vy " << vy << "\n";
+        M[i].vx += ax * dt;
+        M[i].vy += ay * dt;
+        // std::cout << " vx " << vx << " vy " << vy <<  "\n";
     }
 }
 
