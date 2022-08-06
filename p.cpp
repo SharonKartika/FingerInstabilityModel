@@ -3,11 +3,11 @@
 #include <cmath>
 #include <fstream>
 
-constexpr int N{1000}; // #agents
-constexpr int n{100};  // #time steps
+constexpr int N{40};  // #agents
+constexpr int n{100}; // #time steps
 constexpr float W{1200.};
 constexpr float H{1200.};
-constexpr float dt = 1;
+constexpr float dt = 0.01;
 float w2, h2;
 
 float unitrand();
@@ -28,7 +28,7 @@ public:
     void update()
     {
         x += vx * dt;
-        y += y + vy * dt;
+        y += vy * dt;
     }
 };
 
@@ -65,7 +65,7 @@ float getforce(float r)
     force -= U3 * pow(r - A3, 2) * Hv(r - A3);
     force += U1 * (r - A1) * Hv(r - A1);
     return force;
-    // return 100000000. / (r * r);
+    // return 10000. / (r * r);
 }
 float tempvar;
 void calcvelocities(MOVER M[])
@@ -81,15 +81,23 @@ void calcvelocities(MOVER M[])
         {
             if (i != j)
             {
+                // interactionforce(&ax, &ay, M[i], M[j]);
+
                 dx = M[j].x - M[i].x;
                 dy = M[j].y - M[i].y;
                 r = sqrt(dx * dx + dy * dy);
 
-                theta = atan2(dy, dx);
-                f = getforce(r);
+                if (r < 70)
+                {
+                    theta = atan2(dy, dx);
+                    f = getforce(r);
 
-                ax += f * cos(theta);
-                ay += f * sin(theta);
+                    ax += f * cos(theta);
+                    ay += f * sin(theta);
+                }
+                // interaction force end
+
+
             }
         }
         M[i].vx += ax * dt;
