@@ -3,15 +3,20 @@
 #include <cmath>
 #include <fstream>
 
-constexpr int N{40};  // #agents
-constexpr int n{100}; // #time steps
+#include "utilityfunctions.cpp"
+
+constexpr int N{100}; // #agents
+constexpr int n{1000}; // #time steps
 constexpr float W{1200.};
 constexpr float H{1200.};
 constexpr float dt = 0.01;
+constexpr float beta = 60;
 float w2, h2;
 
 float unitrand();
 float map(float, float, float, float, float);
+float Hv(float);
+float noisemag(float);
 
 class MOVER
 {
@@ -22,8 +27,10 @@ public:
     {
         x = map(unitrand(), 0., 1., -w2, w2);
         y = map(unitrand(), 0., 1., -h2, h2);
-        vx = 0.;
-        vy = 0.;
+        // vx = 0.;
+        // vy = 0.;
+        vx = (unitrand() - 0.5)*500;
+        vy = (unitrand() - 0.5)*500;
     }
     void update()
     {
@@ -32,30 +39,14 @@ public:
     }
 };
 
-float unitrand()
-/*Returns a float chosen randomly from [0,1]  */
-{
-    return float(rand()) / INT_MAX;
-}
-float map(float ri, float x1, float x2, float y1, float y2)
-/*Maps one interval to another */
-{
-    float runit = (ri - x1) / (x2 - x1);
-    float rf = runit * (y2 - y1) + y1;
-    return rf;
-}
 void writeposition(MOVER M[], std::ofstream &file)
 {
     for (int i = 0; i < N - 1; i++)
         file << M[i].x << ',' << M[i].y << ',';
     file << M[N - 1].x << ',' << M[N - 1].y << '\n';
 }
-float Hv(float r)
-{ // heaviside function
-    return r > 0;
-}
 
-float getforce(float r)
+float getinteractionforce(float r)
 {
     float U0 = 2650, U1 = 30, U2 = 2, U3 = 1;
     float A0 = 8, A1 = 2, A2 = 25, A3 = 26;
@@ -65,9 +56,8 @@ float getforce(float r)
     force -= U3 * pow(r - A3, 2) * Hv(r - A3);
     force += U1 * (r - A1) * Hv(r - A1);
     return force;
-    // return 10000. / (r * r);
+    // return 10000. / (r * r); // gravity
 }
-float tempvar;
 void calcvelocities(MOVER M[])
 {
     float f;
@@ -77,8 +67,10 @@ void calcvelocities(MOVER M[])
     {
         ax = 0;
         ay = 0;
+
         for (int j = 0; j < N; j++)
-        {
+        { // interaction force
+
             if (i != j)
             {
                 // interactionforce(&ax, &ay, M[i], M[j]);
@@ -90,16 +82,39 @@ void calcvelocities(MOVER M[])
                 if (r < 70)
                 {
                     theta = atan2(dy, dx);
-                    f = getforce(r);
+                    f = -1*getinteractionforce(r);
 
                     ax += f * cos(theta);
                     ay += f * sin(theta);
                 }
                 // interaction force end
-
-
             }
         }
+
+        float axt = 0, ayt = 0;
+        int Ni = 1; // number of nearest neighbors of M[i]
+        for (int j = 0; j < N; j++)
+        { // viscek force
+            if (i != j)
+            {
+                dx = M[j].x - M[i].x;
+                dy = M[j].y - M[i].y;
+                r = sqrt(dx * dx + dy * dy);
+
+                if (r < 70)
+                {
+                    Ni += 1;
+                    axt += (M[j].vx - M[i].vx);
+                    ayt += (M[j].vy - M[i].vy);
+                }
+            }
+        }
+        axt *= (beta/Ni);
+        ayt *= (beta/Ni);
+
+        ax += axt;
+        ay += ayt;
+
         M[i].vx += ax * dt;
         M[i].vy += ay * dt;
         // std::cout << " vx " << vx << " vy " << vy <<  "\n";
@@ -128,6 +143,5 @@ int main()
         updateposition(M);
         writeposition(M, posfile);
     }
-    std::cout << "finished running";
-    std::cout << getforce(70.);
+    std::cout << "finished running\n";
 }

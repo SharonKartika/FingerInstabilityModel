@@ -1,6 +1,5 @@
 using Plots	
 using DelimitedFiles
-using PlutoUI
 gr()
 
 function generateAnimation(W, H)
