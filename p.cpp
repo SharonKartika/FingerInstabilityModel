@@ -65,6 +65,7 @@ void calcvelocities(MOVER M[])
     float theta;
     for (int i = 0; i < N; i++)
     {
+        //new branch
         ax = 0;
         ay = 0;
 
