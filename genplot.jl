@@ -1,6 +1,6 @@
 using Plots	
 using DelimitedFiles
-gr()
+gr(legend=false, aspectratio=:equal)
 
 function generateAnimation(W, H)
 	data1 = readdlm("./positiondata.csv", ',', Float64);

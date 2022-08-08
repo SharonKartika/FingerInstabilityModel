@@ -146,5 +146,5 @@ int main(int argc, char *argv[])
         updateposition(M);
         writeposition(M, posfile);
     }
-    std::cout << "finished running\n";
+    std::cout << "simulation complete\n";
 }
