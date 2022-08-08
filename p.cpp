@@ -127,7 +127,7 @@ void updateposition(MOVER M[])
         M[i].update();
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     srand(1);
     std::ofstream posfile;
