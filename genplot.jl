@@ -15,3 +15,9 @@ function generateAnimation(W, H)
 		gif(anim, "Results/Result$(rand()).gif", fps = 30)
 	end
 end
+
+function simulateandplot(N=100, n=300, W=1200, H=1200)
+	t = @elapsed run(`./p $(N) $(n)`)
+	println("Time taken: $(t) seconds\n");
+	generateAnimation(W, H)
+end

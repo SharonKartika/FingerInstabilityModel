@@ -5,8 +5,8 @@
 
 #include "utilityfunctions.cpp"
 
-constexpr int N{100}; // #agents
-constexpr int n{1000}; // #time steps
+int N{100}; // #agents
+int n{500}; // #time steps
 constexpr float W{1200.};
 constexpr float H{1200.};
 constexpr float dt = 0.01;
@@ -129,6 +129,9 @@ void updateposition(MOVER M[])
 
 int main(int argc, char *argv[])
 {
+    N = std::stoi(argv[1]);
+    n = std::stoi(argv[2]);
+
     srand(1);
     std::ofstream posfile;
     posfile.open("positiondata.csv");
