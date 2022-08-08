@@ -1,0 +1,104 @@
+#include <iostream>
+#include <bits/stdc++.h>
+#include <cmath>
+#include <fstream>
+
+#include "utilityfunctions.cpp"
+
+float map(float, float, float, float, float);
+float randf(float, float);
+float Hv(float);
+
+int N{100}; // # agents
+int n{500}; // # time steps
+constexpr float W{1200.};
+constexpr float H{1200.};
+constexpr float beta = 60;
+constexpr float dt = 0.01;
+float w2, h2;
+
+class MOVER
+{
+public:
+    float x, y;
+    float vx, vy;
+    float ax, ay;
+    MOVER()
+    {
+        x = randf(-w2, w2);
+        y = randf(-h2, h2);
+        vx = randf(-10, 10);
+        vy = randf(-10, 10);
+        ax = 0.;
+        ay = 0.;
+    }
+};
+
+void writeposition(MOVER M[], std::ofstream &file)
+{
+    for (int i = 0; i < N - 1; i++)
+        file << M[i].x << ',' << M[i].y << ',';
+    file << M[N - 1].x << ',' << M[N - 1].y << '\n';
+}
+
+float forceinter(float r)
+{
+    return 10000000. / (r * r);
+}
+
+void getinteractionforce(MOVER &A, MOVER &B)
+{
+    float dx = B.x - A.x;
+    float dy = B.y - A.y;
+    float r = sqrt(dx * dx + dy * dy);
+    float f = forceinter(r);
+    A.ax += f * (dx / r);
+    A.ay += f * (dy / r);
+}
+
+void updateinteractionforce(MOVER M[])
+{
+    for (int i = 0; i < N; i++)
+    {
+        M[i].ax = 0.;
+        M[i].ay = 0.;
+        for (int j = 0; (j < N); j++)
+        {
+            if (i != j)
+                getinteractionforce(M[i], M[j]);
+        }
+    }
+}
+
+void updatevelpos(MOVER M[])
+{
+    for (int i = 0; i < N; i++)
+    {
+        M[i].vx += M[i].ax * dt;
+        M[i].vy += M[i].ay * dt;
+        M[i].x += M[i].vx * dt;
+        M[i].y += M[i].vy * dt;
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    N = std::stoi(argv[1]);
+    n = std::stoi(argv[2]);
+    w2 = W / 2;
+    h2 = H / 2;
+    MOVER M[N];
+
+    srand(1);
+    std::ofstream posfile;
+    posfile.open("positiondata.csv");
+
+    for (int t = 0; t < n; t++)
+    {
+        // time loop
+        updateinteractionforce(M);
+        updatevelpos(M);
+        writeposition(M, posfile);
+    }
+    std::cout << "simulation complete\n";
+}

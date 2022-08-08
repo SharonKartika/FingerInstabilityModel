@@ -1,6 +1,6 @@
 using Plots	
 using DelimitedFiles
-gr(legend=false, aspectratio=:equal)
+gr()
 
 function generateAnimation(W, H)
 	data1 = readdlm("./positiondata.csv", ',', Float64);
@@ -10,14 +10,21 @@ function generateAnimation(W, H)
 			# x = x .- W.*round.(x./W);
 			# y = y .- H.*round.(y./H);
 			plot(x ,y ,seriestype=:scatter, xlims=[-W/2,W/2], ylims=[-H/2,H/2],
-			 legend=nothing, axis=nothing, markerstrokewidth=0,c=:royalblue)
+			 legend=nothing, axis=nothing, markerstrokewidth=0,c=:royalblue,
+			  aspectratio=:equal)
+			# plot(x ,y ,seriestype=:scatter, xlims=[-12000,12000], ylims=[-12000, 12000],
+			#  legend=nothing, axis=nothing, markerstrokewidth=0,c=:royalblue)
+
 		end
 		gif(anim, "Results/Result$(rand()).gif", fps = 30)
 	end
 end
 
-function simulateandplot(N=100, n=300, W=1200, H=1200)
+function simulateandplot(N=200, n=300, W=1200, H=1200)
 	t = @elapsed run(`./p $(N) $(n)`)
-	println("Time taken: $(t) seconds\n");
-	generateAnimation(W, H)
+	println("Time taken to simulate: $(t) seconds\n");
+	t2 = @elapsed plt = generateAnimation(W, H)
+	println("Time taken to plot: $(t2) seconds\n");
+	plt
 end
+

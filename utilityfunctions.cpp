@@ -17,6 +17,15 @@ float map(float ri, float x1, float x2, float y1, float y2)
     return rf;
 }
 
+float randf(float a = 0., float b = 1.)
+/*Returns a float chosen randomly
+Defaults to [0,1]*/
+{
+    float r = float(rand()) / INT_MAX;
+    return map(r, 0, 1, a, b);
+}
+
+
 float Hv(float r)
 { // heaviside function
     return r > 0;

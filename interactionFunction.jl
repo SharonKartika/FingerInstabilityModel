@@ -17,3 +17,11 @@ function getforce(r)
     return force
 end
 
+
+function U(r)
+    U0 = 2400
+    a0 = 8
+    U1 = 2
+    a1 = 35
+    return U0 * exp(-(r / a0)^2) + U1 * (r - a1)^2 * Hv(r - a1)
+end

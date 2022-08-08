@@ -39,24 +39,28 @@ public:
     }
     void checkedgesperiodic()
     {
-        if (x > W)
-            x -= W;
+        if (x > w2)
+            // x -= W;
+            x = -w2;
         else if (x < 0)
-            x += W;
-        if (y > H)
-            y -= H;
+            // x += W;
+            x = w2;
+        if (y > h2)
+            // y -= H;
+            y = -h2;
         else if (y < 0)
-            y += H;
+            // y += H;
+            y = h2;
     }
     void checkedgesreflective()
     {
-        if (x > W)
+        if (x > w2)
             vx *= -1;
-        else if (x < 0)
+        else if (x < -w2)
             vx *= -1;
-        if (y > H)
+        if (y > h2)
             vy *= -1;
-        else if (y < 0)
+        else if (y < -w2)
             vy *= -1;
     }
 };
@@ -70,15 +74,15 @@ void writeposition(MOVER M[], std::ofstream &file)
 
 float getinteractionforce(float r)
 {
-    float U0 = 2650, U1 = 30, U2 = 2, U3 = 1;
-    float A0 = 8, A1 = 2, A2 = 25, A3 = 26;
-    float force = 0;
-    force += U0 * r * exp(-(pow((r / A0), 2)));
-    force += U2 * exp(-r / A2);
-    force -= U3 * pow(r - A3, 2) * Hv(r - A3);
-    force += U1 * (r - A1) * Hv(r - A1);
-    return force;
-    // return 10000. / (r * r); // gravity
+    // float U0 = 2650, U1 = 30, U2 = 2, U3 = 1;
+    // float A0 = 8, A1 = 2, A2 = 25, A3 = 26;
+    // float force = 0;
+    // force += U0 * r * exp(-(pow((r / A0), 2)));
+    // force += U2 * exp(-r / A2);
+    // force -= U3 * pow(r - A3, 2) * Hv(r - A3);
+    // force += U1 * (r - A1) * Hv(r - A1);
+    // return force;
+    return 10000000. / (r * r); // gravity
 }
 void calcvelocities(MOVER M[])
 {
@@ -102,41 +106,42 @@ void calcvelocities(MOVER M[])
                 dy = M[j].y - M[i].y;
                 r = sqrt(dx * dx + dy * dy);
 
-                if (r < 70)
-                {
-                    theta = atan2(dy, dx);
-                    f = -1 * getinteractionforce(r);
+                // if (r < 70)
+                // {
+                theta = atan2(dy, dx);
+                // f = -1 * getinteractionforce(r);
+                f = 1 * getinteractionforce(r);
 
-                    ax += f * cos(theta);
-                    ay += f * sin(theta);
-                }
+                ax += f * cos(theta);
+                ay += f * sin(theta);
+                // }
                 // interaction force end
             }
         }
 
-        float axt = 0, ayt = 0;
-        int Ni = 1; // number of nearest neighbors of M[i]
-        for (int j = 0; j < N; j++)
-        { // viscek force
-            if (i != j)
-            {
-                dx = M[j].x - M[i].x;
-                dy = M[j].y - M[i].y;
-                r = sqrt(dx * dx + dy * dy);
+        // float axt = 0, ayt = 0;
+        // int Ni = 1; // number of nearest neighbors of M[i]
+        // for (int j = 0; j < N; j++)
+        // { // viscek force
+        //     if (i != j)
+        //     {
+        //         dx = M[j].x - M[i].x;
+        //         dy = M[j].y - M[i].y;
+        //         r = sqrt(dx * dx + dy * dy);
 
-                if (r < 70)
-                {
-                    Ni += 1;
-                    axt += (M[j].vx - M[i].vx);
-                    ayt += (M[j].vy - M[i].vy);
-                }
-            }
-        }
-        axt *= (beta / Ni);
-        ayt *= (beta / Ni);
+        //         if (r < 70)
+        //         {
+        //             Ni += 1;
+        //             axt += (M[j].vx - M[i].vx);
+        //             ayt += (M[j].vy - M[i].vy);
+        //         }
+        //     }
+        // }
+        // axt *= (beta / Ni);
+        // ayt *= (beta / Ni);
 
-        ax += axt;
-        ay += ayt;
+        // ax += axt;
+        // ay += ayt;
 
         M[i].vx += ax * dt;
         M[i].vy += ay * dt;
@@ -149,12 +154,14 @@ void updateposition(MOVER M[])
     for (int i = 0; i < N; i++)
     {
         M[i].update();
-        M[i].checkedgesreflective();
+        // M[i].checkedgesperiodic();
+        // M[i].checkedgesreflective();
     }
 }
 
 int main(int argc, char *argv[])
 {
+
     N = std::stoi(argv[1]);
     n = std::stoi(argv[2]);
 
