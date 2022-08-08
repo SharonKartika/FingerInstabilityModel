@@ -29,13 +29,35 @@ public:
         y = map(unitrand(), 0., 1., -h2, h2);
         // vx = 0.;
         // vy = 0.;
-        vx = (unitrand() - 0.5)*500;
-        vy = (unitrand() - 0.5)*500;
+        vx = (unitrand() - 0.5) * 500;
+        vy = (unitrand() - 0.5) * 500;
     }
     void update()
     {
         x += vx * dt;
         y += vy * dt;
+    }
+    void checkedgesperiodic()
+    {
+        if (x > W)
+            x -= W;
+        else if (x < 0)
+            x += W;
+        if (y > H)
+            y -= H;
+        else if (y < 0)
+            y += H;
+    }
+    void checkedgesreflective()
+    {
+        if (x > W)
+            vx *= -1;
+        else if (x < 0)
+            vx *= -1;
+        if (y > H)
+            vy *= -1;
+        else if (y < 0)
+            vy *= -1;
     }
 };
 
@@ -65,7 +87,7 @@ void calcvelocities(MOVER M[])
     float theta;
     for (int i = 0; i < N; i++)
     {
-        //new branch
+        // new branch
         ax = 0;
         ay = 0;
 
@@ -83,7 +105,7 @@ void calcvelocities(MOVER M[])
                 if (r < 70)
                 {
                     theta = atan2(dy, dx);
-                    f = -1*getinteractionforce(r);
+                    f = -1 * getinteractionforce(r);
 
                     ax += f * cos(theta);
                     ay += f * sin(theta);
@@ -110,8 +132,8 @@ void calcvelocities(MOVER M[])
                 }
             }
         }
-        axt *= (beta/Ni);
-        ayt *= (beta/Ni);
+        axt *= (beta / Ni);
+        ayt *= (beta / Ni);
 
         ax += axt;
         ay += ayt;
@@ -125,7 +147,10 @@ void calcvelocities(MOVER M[])
 void updateposition(MOVER M[])
 {
     for (int i = 0; i < N; i++)
+    {
         M[i].update();
+        M[i].checkedgesreflective();
+    }
 }
 
 int main(int argc, char *argv[])
@@ -145,6 +170,7 @@ int main(int argc, char *argv[])
     {
         calcvelocities(M);
         updateposition(M);
+
         writeposition(M, posfile);
     }
     std::cout << "simulation complete\n";
