@@ -36,4 +36,4 @@ end
 
 function gravity(r)
     return 10000000 / (r ^ 2)
-end
+end 
