@@ -27,10 +27,33 @@ public:
     {
         x = randf(-w2, w2);
         y = randf(-h2, h2);
-        vx = randf(-10, 10);
-        vy = randf(-10, 10);
+        vx = randf(-10, 10)*50;
+        vy = randf(-10, 10)*50;
         ax = 0.;
         ay = 0.;
+    }
+    void checkedgesreflect()
+    {
+        if (x > w2)
+        {
+            x = w2;
+            vx *= -1;
+        }
+        else if (x < -w2)
+        {
+            x = -w2;
+            vx *= -1;
+        }
+        if (y > h2)
+        {
+            y = h2;
+            vy *= -1;
+        }
+        else if (y < -h2)
+        {
+            y = -h2;
+            vy *= -1;
+        }
     }
 };
 
@@ -43,7 +66,15 @@ void writeposition(MOVER M[], std::ofstream &file)
 
 float forceinter(float r)
 {
-    return 10000000. / (r * r);
+    // return 10000000. / (r * r); //gravity;
+
+    //  lennard jones
+    float eps = 1e6;
+    float sig = 0.1;
+    float f = 4 * eps;
+    f *= (12 * pow(sig, 12) * pow(r, -13)) -
+         6 * pow(sig, 6) * pow(r, -7);
+    return f;
 }
 
 void getinteractionforce(MOVER &A, MOVER &B)
@@ -62,7 +93,7 @@ void updateinteractionforce(MOVER M[])
     {
         M[i].ax = 0.;
         M[i].ay = 0.;
-        for (int j = 0; (j < N); j++)
+        for (int j = 0; j < N; j++)
         {
             if (i != j)
                 getinteractionforce(M[i], M[j]);
@@ -78,6 +109,7 @@ void updatevelpos(MOVER M[])
         M[i].vy += M[i].ay * dt;
         M[i].x += M[i].vx * dt;
         M[i].y += M[i].vy * dt;
+        M[i].checkedgesreflect();
     }
 }
 

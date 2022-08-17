@@ -25,3 +25,15 @@ function U(r)
     a1 = 35
     return U0 * exp(-(r / a0)^2) + U1 * (r - a1)^2 * Hv(r - a1)
 end
+
+function lenjones(r, sig=100)
+    eps = 10
+    f = 4 * eps
+    f *= (12 * sig^12) * r^(-13) -
+         6 * (sig^6) * r^(-7)
+    return f
+end
+
+function gravity(r)
+    return 10000000 / (r ^ 2)
+end
