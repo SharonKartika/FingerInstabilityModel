@@ -93,22 +93,22 @@ void getinteractionforce(MOVER &A, MOVER &B)
     float dx = B.x - A.x;
     float dy = B.y - A.y;
     float r = sqrt(dx * dx + dy * dy);
-    float f = -forcemag(r);
+    float f = forcemag(r);
     float fx = f * (dx / r);
     float fy = f * (dy / r);
     A.ax += fx;
     A.ay += fy;
-    B.ax -= fx;
-    B.ay -= fy;
+    // B.ax -= fx;
+    // B.ay -= fy;
 }
 
 void looploop(MOVER M[])
 {
     /*Two loops over every interacting pair*/
     initaccn(M);
-    for (int i = 0; i < N - 1; i++)
+    for (int i = 0; i < N; i++)
     {   //every particle except the last
-        for (int j = i + 1; j < N; j++)
+        for (int j = 0; j < N; j++)
         {   //every particle starting from i,
             // including the last
             getinteractionforce(M[i], M[j]);
