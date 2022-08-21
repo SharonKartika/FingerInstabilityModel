@@ -28,8 +28,8 @@ public:
     {
         x = randf(-w2, w2);
         y = randf(-h2, h2);
-        vx = randf(-1000, 1000);
-        vy = randf(-1000, 1000);
+        vx = randf(-10, 10);
+        vy = randf(-10, 10);
         ax = ay = 0.;
     }
     void update()
@@ -88,25 +88,34 @@ float forcemag(float r)
   */
     // return 1e4 / r * r;//gravity
 
-    // float U0 = 2650, U1 = 30, U2 = 2, U3 = 1;
-    // float A0 = 8, A1 = 2, A2 = 25, A3 = 26;
-    // float force = 0;
-    // force += U0 * r * exp(-(pow((r / A0), 2)));
-    // force += U2 * exp(-r / A2);
-    // force -= U3 * pow(r - A3, 2) * Hv(r - A3);
-    // force += U1 * (r - A1) * Hv(r - A1);
+    /* Interaction potential (Nir Gov 2015)*/
+    if (r > 70)
+        return 0.;
+    float U0 = 2650, U1 = 30, U2 = 2, U3 = 1;
+    float A0 = 8, A1 = 2, A2 = 25, A3 = 26;
+    float force = 0;
+    force += U0 * r * exp(-(pow((r / A0), 2)));
+    force += U2 * exp(-r / A2);
+    force -= U3 * pow(r - A3, 2) * Hv(r - A3);
+    force += U1 * (r - A1) * Hv(r - A1);
+    return -force;
+
+    /* lennard jones */
+    // float eps = 21.;
+    // float sig = 78.;
+    // float force = 0.;
+    // force += 6 * pow(sig, 6) / pow(r, 7);
+    // force -= 12 * pow(sig, 12) / pow(r, 13);
+    // force *= 4 * eps;
     // return force;
+}
 
-    // lennard jones
-    float eps = 21.;
-    float sig = 78.;
-    float force = 0.;
-    force += 6 * pow(sig, 6) / pow(r, 7);
-    force -= 12 * pow(sig, 12) / pow(r, 13);
-    force *= 4 * eps;
-
-    // std::cout<<force<<"\n";
-    return force;
+void addforcetoaccn(CELL &A, CELL &B, float fx, float fy)
+{
+    A.ax += fx;
+    A.ay += fy;
+    B.ax -= fx;
+    B.ay -= fy;
 }
 
 void setaccn(CELL &A, CELL &B)
@@ -119,10 +128,7 @@ void setaccn(CELL &A, CELL &B)
     float f = forcemag(r);
     float fx = f * (dx / r);
     float fy = f * (dy / r);
-    A.ax += fx;
-    A.ay += fy;
-    B.ax -= fx;
-    B.ay -= fy;
+    addforcetoaccn(A, B, fx, fy);
 }
 
 void looploop(CELL M[])
@@ -139,7 +145,7 @@ void looploop(CELL M[])
     for (int i = 0; i < N; i++)
     { // position update loop
         M[i].update();
-        // M[i].wallreflect();
+        M[i].wallreflect();
         // M[i].wallperiodic();
     }
 }
