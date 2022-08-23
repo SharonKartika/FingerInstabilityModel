@@ -23,7 +23,9 @@ class CELL
 public:
     float x, y,
         vx, vy,
-        ax, ay;
+        ax, ay,
+        avx, avy;
+    int ninr;
     CELL()
     {
         x = randf(-w2, w2);
@@ -31,6 +33,8 @@ public:
         vx = randf(-10, 10);
         vy = randf(-10, 10);
         ax = ay = 0.;
+        avx = avy = 0.; // viscek accn.
+        ninr = 0;       // viscek neighbors
     }
     void update()
     {
@@ -74,11 +78,13 @@ void writeposition(CELL M[], std::ofstream &file)
 void initaccn(CELL M[])
 { /*
     Sets accn of all cells to zero.
+    As well as the number of neighbors
   */
     for (int i = 0; i < N; i++)
     {
-        M[i].ax = 0.;
-        M[i].ay = 0.;
+        M[i].ax = M[i].ay = 0.;
+        M[i].avx = M[i].avy = 0.;
+        M[i].ninr = 0;
     }
 }
 
@@ -122,6 +128,7 @@ void setaccn(CELL &A, CELL &B)
 { /*
     Sets the acceleration of the cells passed
  */
+    //interaction force
     float dx = B.x - A.x;
     float dy = B.y - A.y;
     float r = sqrt(dx * dx + dy * dy);
@@ -129,6 +136,18 @@ void setaccn(CELL &A, CELL &B)
     float fx = f * (dx / r);
     float fy = f * (dy / r);
     addforcetoaccn(A, B, fx, fy);
+
+    //viscek force
+    if (r < 100.)
+    {
+        A.avx += B.vx - A.vx;
+        A.avy += B.vy - A.vy;
+        A.ninr += 1;
+
+        B.avx += A.vx - B.vx;
+        B.avy += A.vy - B.vy;
+        B.ninr += 1;
+    }
 }
 
 void looploop(CELL M[])
@@ -142,10 +161,20 @@ void looploop(CELL M[])
             setaccn(M[i], M[j]);
         }
     }
+   
+
+    for (int i = 0; i < N; i++)
+    { // add vicesk accn to accn
+        M[i].avx *= (beta / M[i].ninr);
+        M[i].avy *= (beta / M[i].ninr);
+        M[i].ax += M[i].avx;
+        M[i].ay += M[i].avy;
+    }
+
     for (int i = 0; i < N; i++)
     { // position update loop
         M[i].update();
-        M[i].wallreflect();
+        // M[i].wallreflect();
         // M[i].wallperiodic();
     }
 }

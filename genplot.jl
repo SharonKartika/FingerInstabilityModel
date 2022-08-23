@@ -22,10 +22,11 @@ function generateAnimation(W, H)
 end
 
 function simulateandplot(N=200, n=300, W=1200, H=1200)
-	t = @elapsed run(`./qf $(N) $(n)`)
-	println("Time taken to simulate: $(t) seconds\n");
-	t2 = @elapsed plt = generateAnimation(W, H)
-	println("Time taken to plot: $(t2) seconds\n");
+	t1 = @elapsed run(`g++ pf.cpp -o pf`);
+	t2 = @elapsed run(`./pf $(N) $(n)`)
+	println("Time taken to simulate: $(t1+t2) seconds\n");
+	t3 = @elapsed plt = generateAnimation(W, H)
+	println("Time taken to plot: $(t3) seconds\n");
 	plt
 end
 
