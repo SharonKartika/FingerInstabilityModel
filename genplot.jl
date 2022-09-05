@@ -30,3 +30,21 @@ function simulateandplot(N=200, n=300, W=1200, H=1200)
 	plt
 end
 
+
+function tempfunction()
+	data1 = readdlm("./positiondata.csv", ',', Float64);
+	x, y = data1[:, 1:2:end], data1[:, 2:2:end]
+	plot(x, y) 
+
+end
+
+function tempplot(N=200, n=300, W=1200, H=1200)
+	t1 = @elapsed run(`g++ pf.cpp -o pf`);
+	t2 = @elapsed run(`./pf $(N) $(n)`)
+	# println("Time taken to simulate: $(t1+t2) seconds\n");
+	# t3 = @elapsed plt = generateAnimation(W, H)
+	# println("Time taken to plot: $(t3) seconds\n");
+	# plt
+	#temp 
+	tempfunction()
+end
