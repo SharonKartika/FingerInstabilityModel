@@ -48,3 +48,7 @@ function tempplot(N=200, n=300, W=1200, H=1200)
 	#temp 
 	tempfunction()
 end
+
+# edge detection.
+
+#

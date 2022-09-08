@@ -133,7 +133,7 @@ float interactionforcemag(float r)
 void setaccn(CELL &A, CELL &B)
 {
     VEC2 dp = B.p - A.p;
-    float r = sqrt(dp.x * dp.x + dp.y * dp.y); // change to vec.
+    float r = dp.mag(); 
     float f = interactionforcemag(r);
     VEC2 F(f * (dp.x / r), f * (dp.y / r));
     A.a += F;
@@ -165,7 +165,7 @@ void looploop(CELL M[])
         {
 
             VEC2 dp = M[j].p - M[i].p;
-            float r = sqrt(pow(dp.x, 2) + pow(dp.y, 2));
+            float r = dp.mag();
             if (r < rt)
             {
                 dv = M[j].v - M[i].v;
@@ -180,7 +180,6 @@ void looploop(CELL M[])
     // noise
     for (int i = 0; i < N; i++)
     {
-        // M[i].a = VEC2(0., 0.);//temp REMOVE when done
         float sig0 = 150.;
         float sig1 = 300.;
         float rho0 = N / (W * H); // reference density (change to rho1)
@@ -192,14 +191,14 @@ void looploop(CELL M[])
         VEC2 U = VEC2(randf(0, 1), randf(0, 1));
         VEC2 xi(sqrt(-2 * log(U.x)) * cos(2 * PI * U.y),
                 sqrt(-2 * log(U.x)) * sin(2 * PI * U.y));
-        float std1 = 0.01;
+        float std1 = 1;//temp
         xi = xi * std1;
         float theta = 0.;
         for (int j = 0; j < N; j++)
         {
 
             VEC2 dp = M[j].p - M[i].p;
-            float r = sqrt(pow(dp.x, 2) + pow(dp.y, 2));
+            float r = dp.mag();
             if (r < rt)
             {
                 rho += 1;
@@ -207,15 +206,11 @@ void looploop(CELL M[])
         }
         rho /= PI * rt * rt;
         sig = sig0 + (sig1 - sig0) * (1 - rho / rho0);
-        // M[i].eta += (xi - M[i].eta) * (dt / tau);
-        // euler maruyama
+        // euler maruyama integration
         M[i].eta = M[i].eta - (M[i].eta) * (dt / tau);
         M[i].eta = M[i].eta + (xi) * (sqrt(dt) / tau);
 
-        // M[i].eta = M[i].eta / M[i].eta.mag(); //normalize eta
-
-        // theta = atan2(M[i].eta.y, M[i].eta.x);
-        // M[i].a += VEC2(cos(theta), sin(theta)) * sig;
+        M[i].eta = M[i].eta / M[i].eta.mag(); //normalize eta
         M[i].a += M[i].eta * sig;
     }
 

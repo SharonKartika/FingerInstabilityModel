@@ -36,3 +36,20 @@ end
 function gravity(r)
     return 1e4 / (r ^ 2)
 end 
+
+"""Border force"""
+function fborder(H)
+    Hmax = 1/20
+    F0 = 0.
+    Fmax = 1250
+    if (H>0)
+        return F0
+    elseif (0 ≥ H ≥ -Hmax)
+        return (Fmax/Hmax)*H 
+    elseif (H < -Hmax)
+        return Fmax 
+    else 
+        error("finthebug")
+    end
+end
+
