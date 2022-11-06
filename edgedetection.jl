@@ -9,9 +9,9 @@ x, y = posdata[1, 1:2:end], posdata[1, 2:2:end]
 
 #for testing different cell distributions
 
-X = readdlm("GeneratedData/dumbellPosition.csv", ',')
-x = X[:, 1]
-y = X[:, 2]
+# X = readdlm("GeneratedData/dumbellPosition.csv", ',')
+# x = X[:, 1]
+# y = X[:, 2]
 
 
 struct VEC2
@@ -48,6 +48,7 @@ rft = cells[i]
 # rft = cells[rand(1:length(cells))]
 
 #method 1 try; perpindicular to rcm
+#=
 begin
 	rt = 300.
 	rcur = rft 
@@ -55,7 +56,8 @@ begin
 	plot(x, y, seriestype=:scatter, markerstrokewidth=0, aspect_ratio=1, legend=:none)
 	plotcell(rcur, :orange)
 	# begin
-	while true
+	# while true
+	begin
 		candidates = VEC2[]
 		for j in 1:lastindex(cells)
 			if (cells[j]!=rcur)
@@ -75,7 +77,7 @@ begin
 		dotsmag = dots
 		if isempty(dotsmag)
 			# error("empty dotsmag")
-			break
+			# break
 		end
 		# mindotindex = argmin(dotsmag)
 		mindotindex = argmax(dotsmag)
@@ -91,13 +93,16 @@ begin
 		plotcell(rcur)
 		#condition
 		if (rcur == rft)
-			break
+			# break
 		end
 	end
 	plotcell(rcur, :blue)
 end
+=#
 
+#method 2 try: angle binning approach
 #angle and distance of each cell wrt to the center of mass
+#=
 begin
 	angs = (x->ang(x, rcm)).(cells)
 	dists = (x->dist(x, rcm)).(cells)
@@ -152,6 +157,7 @@ begin
 	plotcell.(cycells[BCI], :orange)[end]
 
 end
+=#
 
 ### local center of mass approach
 plot() #clear
@@ -227,29 +233,54 @@ for i in 1:10
 	rns = neighbors(rc)
 	rl = COM(rns)
 	rns = rns not in boundcells
-	rn = largestscore(rns)
+	rn = largestscoringcell(rns)
 	rc = rn 
 	push!(bcells, rc)
 	plot(rc)
 end
 =#
-"""angle from origin to the vector, counterclockwise"""
-natan(y, x) = (y>=0) ? (atan(y, x)) : (2π+atan(y, x))
-natan(A::VEC2) = natan(A.y, A.x)
-function getscore(rnsnb::Vector{VEC2}, rl::VEC2, rc::VEC2)
-	function getscore(rn::VEC2, rl::VEC2, rc::VEC2)
-		
-	end
-	getscore.(rnsnb, rl, rc)
+Base.atan(A::VEC2) = atan(A.y, A.x)
+
+"""anticlockwise angle between three points a, b, c"""
+function getscore(rl::VEC2, rc::VEC2, rn::VEC2)
+	a = rc - rl # rl -> rc
+	b = rn - rc # rc -> rn 
+	θ1 = atan(b)
+	θ2 = atan(a)
+	return π + θ2 - θ1
 end
+function getscore(rl::VEC2, rc::VEC2, rns::Vector{VEC2})
+	getscore.(rl, rc, rns)
+end
+
+plot() #clear
+plotcell.(cells, :orange)[end] #plot the cells
+
 rc = rft 
 boundcells = VEC2[]
-rt = 30 
-#for 
+rt = 40 
+# for i in 1:10
+begin
 	rns = getneighbors(rc, rt)
-	rl = rncm = VEC2(mean((i->i.x).(rns)),
-				     mean((i->i.y).(rns)))
+	rl = VEC2(mean((i->i.x).(rns)),
+			  mean((i->i.y).(rns)))
+	# plotcell.(rns, :green) #temp
 	#neighbors excluding boundary
 	rnsnb = setdiff(rns, boundcells)
-	rn = getscore(rnsnb, rl, rc) 
-#end
+	nscores = (A::VEC2->getscore(rl, rc, A)).(rnsnb) 
+	#remove obtuse paths
+	nscores[nscores.>=π] .= 0.
+	rnindex = argmax(nscores)
+	rn = rnsnb[rnindex]
+	plotvec(rc, rn) #temp
+	plotvec(rl, rc)
+	rc = rn
+	push!(boundcells, rc)
+	plotcell(rc)
+end
+plotcell(rc)
+
+
+#does not work for the following. (gives invalid score (>2π))
+X = (VEC2(347.857, 267.5), VEC2(354.0, 287.0), VEC2(343.0, 285.0))
+#fix this and the algorithm should work
