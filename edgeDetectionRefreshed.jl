@@ -1,28 +1,28 @@
-using Plots	
+using Plots
 using DelimitedFiles
 using Dates
-gr(aspect_ratio=true)
+gr(aspect_ratio=:equal)
 theme(:dark)
 
 begin
     struct VEC2
-        x::Float64 
-        y::Float64 
+        x::Float64
+        y::Float64
     end
 
-    mean(x) = sum(x)/length(x)
-    dist(a::VEC2, b::VEC2) = √((b.x-a.x)^2+(b.y-a.y)^2)
-    Base. -(a::VEC2, b::VEC2) = VEC2(a.x-b.x, a.y-b.y)
-    Base. +(a::VEC2, b::VEC2) = VEC2(a.x+b.x, a.y+b.y)
-    dot(A::VEC2, B::VEC2) = A.x*B.x + A.y*B.y 
+    mean(x) = sum(x) / length(x)
+    dist(a::VEC2, b::VEC2) = √((b.x - a.x)^2 + (b.y - a.y)^2)
+    Base. -(a::VEC2, b::VEC2) = VEC2(a.x - b.x, a.y - b.y)
+    Base. +(a::VEC2, b::VEC2) = VEC2(a.x + b.x, a.y + b.y)
+    dot(A::VEC2, B::VEC2) = A.x * B.x + A.y * B.y
     mag(A::VEC2) = √(A.x^2 + A.y^2)
-    ang(A::VEC2, B::VEC2) = atan(B.y-A.y, B.x-A.x)
+    ang(A::VEC2, B::VEC2) = atan(B.y - A.y, B.x - A.x)
 end
 
 function plotcell(A::VEC2, color=:purple)
-	scatter!([A.x], [A.y], color=color,
-	markerstrokewidth=0,legend=:none,
-	markerstrokesize=5)
+    scatter!([A.x], [A.y], color=color,
+        markerstrokewidth=0, legend=:none,
+        markerstrokesize=5)
 end
 
 function plotvec(A::VEC2, B::VEC2, color::Symbol=:yellow)
@@ -30,30 +30,33 @@ function plotvec(A::VEC2, B::VEC2, color::Symbol=:yellow)
 end
 
 function getneighbors(cell::VEC2, rt)
-	neighbs = VEC2[]
-	for i in 1:lastindex(cells)
-		if (dist(cell, cells[i])<rt)
-			if (cell!=cells[i])
-				push!(neighbs, cells[i])
-			end 
-		end
-	end
-	return neighbs
+    neighbs = VEC2[]
+    for i in 1:lastindex(cells)
+        if (dist(cell, cells[i]) < rt)
+            if (cell != cells[i])
+                push!(neighbs, cells[i])
+            end
+        end
+    end
+    return neighbs
 end
 
 # posdata = readdlm("./positiondata.csv", ',', Float64);
 # x, y = posdata[1, 1:2:end], posdata[1, 2:2:end]
 
-
-X = readdlm("GeneratedData/dumbellPosition.csv", ',')
-x = X[:, 1]
-y = X[:, 2]
+X = readdlm("boundarypositiondata.csv",',')
+X = X[1, :]
+x = X[1:2:end]
+y = X[2:2:end]
+# X = readdlm("GeneratedData/dumbellPosition.csv", ',')
+# x = X[:, 1]
+# y = X[:, 2]
 
 
 
 cells = VEC2.(x, y)
 rcm = VEC2(mean(x), mean(y))
-dists = (b->dist(rcm, b)).(cells)
+dists = (b -> dist(rcm, b)).(cells)
 
 #farthest cell
 i = argmax(dists)
@@ -69,14 +72,14 @@ TERMINOLOGY
 """Returns the anticlockwise angles between vectors 
 (rc-rl) and (rn-rc)"""
 function angleAC(rl::VEC2, rc::VEC2, rn::VEC2)
-    A = rc-rl
-    B = rn-rc
+    A = rc - rl
+    B = rn - rc
     k = B.y * A.x - A.y * B.x
-    cosθ = dot(A, B)/(mag(A) * mag(B))
+    cosθ = dot(A, B) / (mag(A) * mag(B))
     θ = acos(cosθ)
-    if (k>0)
+    if (k > 0)
         return π - θ
-    else 
+    else
         return 2π - θ
     end
 end
@@ -103,37 +106,49 @@ end
 
 # angleAC(rl, rc, rn)
 
+# Compare C++ and Julia
 
+function randomvec()
+    return VEC2(rand() * 100 - 50, rand() * 100 - 50)
+end
+
+
+# begin
+#     v = [randomvec() for i in 1:3]
+#     println("Julia output: $(angleAC(v...))")
+#     run(`./pfbound $(100) $(200) $(v[1].x) $(v[1].y) $(v[2].x) $(v[2].y) $(v[3].x) $(v[3].y)`)
+#     # run(`./pfbound $(100) $(200) $(12.34)`)
+# end
 
 plot() #clear
 plotcell.(cells, :orange)[end] #plot the cells
 
-rc = rft 
+rc = rft
 boundcells = VEC2[]
-Rt = 30 
+Rt = 30
 
-# begin
-while true
-	rns = getneighbors(rc, Rt)
-	rl = VEC2(mean((i->i.x).(rns)),
-			  mean((i->i.y).(rns)))
-	# plotcell.(rns, :green) #temp
-	#neighbors excluding boundary
-	rnsnb = setdiff(rns, boundcells)
-	# nscores = (A::VEC2->getscore(rl, rc, A)).(rnsnb) 
-	nscores = (A::VEC2->angleAC(rl, rc, A)).(rnsnb) 
-	
+begin
+    # while true
+    rns = getneighbors(rc, Rt)
+    rl = VEC2(mean((i -> i.x).(rns)),
+        mean((i -> i.y).(rns)))
+    # plotcell.(rns, :green) #temp
+    #neighbors excluding boundary
+    rnsnb = setdiff(rns, boundcells)
+    # nscores = (A::VEC2->getscore(rl, rc, A)).(rnsnb) 
+    nscores = (A::VEC2 -> angleAC(rl, rc, A)).(rnsnb)
+
     #remove clockwise paths
-	nscores[nscores.>=π] .= 0.
-	rnindex = argmax(nscores)
-	rn = rnsnb[rnindex]
-	plotvec(rc, rn) #temp
-	plotvec(rl, rc)
-	rc = rn
-	push!(boundcells, rc)
-	plotcell(rc)[end]
+    nscores[nscores.>=π] .= 0.0
+    rnindex = argmax(nscores)
+    rn = rnsnb[rnindex]
+    plotvec(rc, rn) #temp
+    plotvec(rl, rc)
+    rc = rn
+    push!(boundcells, rc)
+    plotcell(rc)[end]
     if (rc == rft)
-        break;
+        # break;
     end
 end
 plotcell(rc)
@@ -142,29 +157,29 @@ plotcell(rc)
 function getBoundary(cells, Rt)
     #find farthest cell 
     begin
-    rcm = VEC2(mean((i->i.x).(cells)),
-			  mean((i->i.y).(cells)))
-    dists = (b->dist(rcm, b)).(cells)
-    i = argmax(dists)
-    rft = cells[i]
+        rcm = VEC2(mean((i -> i.x).(cells)),
+                   mean((i -> i.y).(cells)))
+        dists = (b -> dist(rcm, b)).(cells)
+        i = argmax(dists)
+        rft = cells[i]
     end
-    
-    rc = rft 
+
+    rc = rft
     boundcells = VEC2[]
 
     while true
         rns = getneighbors(rc, Rt)
-        rl = VEC2(mean((i->i.x).(rns)),
-                  mean((i->i.y).(rns)))
+        rl = VEC2(mean((i -> i.x).(rns)),
+                  mean((i -> i.y).(rns)))
         rnsnb = setdiff(rns, boundcells)
-        nscores = (A::VEC2->angleAC(rl, rc, A)).(rnsnb) 
-        nscores[nscores.>=π] .= 0.
+        nscores = (A::VEC2 -> angleAC(rl, rc, A)).(rnsnb)
+        nscores[nscores.>=π] .= 0.0
         rnindex = argmax(nscores)
         rn = rnsnb[rnindex]
         rc = rn
         push!(boundcells, rc)
         if (rc == rft)
-            break;
+            break
         end
     end
     return boundcells

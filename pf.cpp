@@ -87,10 +87,10 @@ class CELL
 public:
     VEC2 p, v, a, eta;
     CELL()
-    {   
+    {
         float theta = randf(0, 2 * PI);
-        float r = w2*sqrt(randf(0, 1));
-        p = VEC2(r*cos(theta), r*sin(theta)); 
+        float r = w2 * sqrt(randf(0, 1));
+        p = VEC2(r * cos(theta), r * sin(theta));
         // p = VEC2(randf(-w2, w2), randf(-h2, h2));
         v = VEC2(randf(-10, 10), randf(-10, 10));
         a = VEC2(0., 0.);
@@ -136,7 +136,7 @@ float interactionforcemag(float r)
 void setaccn(CELL &A, CELL &B)
 {
     VEC2 dp = B.p - A.p;
-    float r = dp.mag(); 
+    float r = dp.mag();
     float f = interactionforcemag(r);
     VEC2 F(f * (dp.x / r), f * (dp.y / r));
     A.a += F;
@@ -194,7 +194,7 @@ void looploop(CELL M[])
         VEC2 U = VEC2(randf(0, 1), randf(0, 1));
         VEC2 xi(sqrt(-2 * log(U.x)) * cos(2 * PI * U.y),
                 sqrt(-2 * log(U.x)) * sin(2 * PI * U.y));
-        float std1 = 1;//temp
+        float std1 = 1; // temp
         xi = xi * std1;
         float theta = 0.;
         for (int j = 0; j < N; j++)
@@ -213,7 +213,7 @@ void looploop(CELL M[])
         M[i].eta = M[i].eta - (M[i].eta) * (dt / tau);
         M[i].eta = M[i].eta + (xi) * (sqrt(dt) / tau);
 
-        M[i].eta = M[i].eta / M[i].eta.mag(); //normalize eta
+        M[i].eta = M[i].eta / M[i].eta.mag(); // normalize eta
         M[i].a += M[i].eta * sig;
     }
 
